@@ -11,7 +11,7 @@ namespace FluidTYPO3\Vhs\ViewHelpers\Content;
 use FluidTYPO3\Vhs\Traits\SlideViewHelperTrait;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * Base class: Content ViewHelpers
@@ -251,19 +251,16 @@ abstract class AbstractContentViewHelper extends AbstractViewHelper
      */
     protected function executeSelectQuery($fields, $condition, $order, $limit)
     {
-        if (class_exists(ConnectionPool::class)) {
-            $queryBuilder = (new ConnectionPool())->getConnectionForTable('tt_content')->createQueryBuilder();
-            $queryBuilder->select($fields)->from('tt_content')->where($condition);
-            if ($order) {
-                $orderings = explode(' ', $order);
-                $queryBuilder->orderBy($orderings[0], $orderings[1]);
-            }
-            if ($limit) {
-                $queryBuilder->setMaxResults((integer) $limit);
-            }
-            return $queryBuilder->execute()->fetchAll();
+        $queryBuilder = (new ConnectionPool())->getConnectionForTable('tt_content')->createQueryBuilder();
+        $queryBuilder->select($fields)->from('tt_content')->where($condition);
+        if ($order) {
+            $orderings = explode(' ', $order);
+            $queryBuilder->orderBy($orderings[0], $orderings[1]);
         }
-        return $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($fields, 'tt_content', $condition, '', $order, $limit);
+        if ($limit) {
+            $queryBuilder->setMaxResults((integer) $limit);
+        }
+        return $queryBuilder->execute()->fetchAll();
     }
 
     /**
@@ -273,11 +270,8 @@ abstract class AbstractContentViewHelper extends AbstractViewHelper
      */
     protected function generateSelectQuery($fields, $condition)
     {
-        if (class_exists(ConnectionPool::class)) {
-            $queryBuilder = (new ConnectionPool())->getConnectionForTable('tt_content')->createQueryBuilder();
-            $queryBuilder->select($fields)->from('tt_content')->where($condition);
-            return $queryBuilder->getSQL();
-        }
-        return $GLOBALS['TYPO3_DB']->SELECTquery($fields, 'tt_content', $condition);
+        $queryBuilder = (new ConnectionPool())->getConnectionForTable('tt_content')->createQueryBuilder();
+        $queryBuilder->select($fields)->from('tt_content')->where($condition);
+        return $queryBuilder->getSQL();
     }
 }
